@@ -1,179 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phone Book App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            margin: 20px auto;
-            width: 80%;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
-        }
-        h1 {
-            text-align: center;
-        }
-        .btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        .btn:hover {
-            background-color: #45a049;
-        }
-        .contact-form {
-            display: none;
-        }
-        .contact-item {
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-        .contact-item button {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 5px 10px;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-        .contact-item button:hover {
-            background-color: #da190b;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phone Book App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      margin: 20px auto;
+      width: 80%;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+    }
+    h1 {
+      text-align: center;
+    }
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    .contact-form {
+      display: none;
+    }
+    .contact-item {
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Phone Book App</h1>
+  <h1>📞 Phone Book App</h1>
+  <button class="btn" onclick="toggleForm()">Add Contact</button>
 
-    <button class="btn" onclick="toggleForm()">Add Contact</button>
+  <div class="contact-form" id="contactForm">
+    <h2>Add Contact</h2>
+    <label for="name">Name:</label>
+    <input type="text" id="name" required>
 
-    <!-- Contact Form -->
-    <div class="contact-form" id="contactForm">
-        <h2>Add Contact</h2>
-        <label for="name">Name:</label>
-        <input type="text" id="name" required>
-        <label for="phone">Phone:</label>
-        <input type="text" id="phone" required>
-        <button class="btn" onclick="addContact()">Save Contact</button>
-    </div>
+    <label for="phone">Phone:</label>
+    <input
+      type="tel"
+      id="phone"
+      required
+      placeholder="e.g. 08012345678"
+      maxlength="11"
+      oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+    >
 
-    <!-- Contacts List -->
-    <div id="contactsList">
-        <!-- Contacts will be displayed here -->
-    </div>
-    
+    <button class="btn" onclick="addContact()">Save Contact</button>
+  </div>
+
+  <input type="text" id="search" onkeyup="searchContacts()" placeholder="🔍 Search contacts...">
+
+  <div id="contactsList"></div>
+  <div id="deleteAllContainer" style="display: none;">
     <button class="btn" onclick="deleteAllContacts()">Delete All Contacts</button>
-
-    <br><br>
-    <input type="text" id="search" onkeyup="searchContacts()" placeholder="Search contacts...">
+  </div>
 </div>
 
 <script>
-    var contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  displayContacts();
 
+  function toggleForm() {
+    const form = document.getElementById("contactForm");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
+
+  function addContact() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!name || !phone || !/^\d{11}$/.test(phone)) {
+      alert("Please enter a valid name and 11-digit phone number.");
+      return;
+    }
+
+    contacts.push({ name, phone });
+    localStorage.setItem('contacts', JSON.stringify(contacts));
     displayContacts();
+    clearForm();
+    toggleForm();
+  }
 
-    function toggleForm() {
-        var form = document.getElementById("contactForm");
-        form.style.display = (form.style.display === "none") ? "block" : "none";
-    }
+  function displayContacts() {
+    const contactsList = document.getElementById("contactsList");
+    contactsList.innerHTML = "";
 
-    function addContact() {
-        var name = document.getElementById("name").value;
-        var phone = document.getElementById("phone").value;
-        var contact = { name: name, phone: phone };
-        contacts.push(contact);
-        localStorage.setItem('contacts', JSON.stringify(contacts));
-        displayContacts();
-        clearForm();
-        toggleForm(); // Hide form after adding contact
-    }
+    contacts.forEach((contact, index) => {
+      const item = document.createElement("div");
+      item.className = "contact-item";
+      item.innerHTML = `
+        <strong>Name:</strong> ${contact.name}<br>
+        <strong>Phone:</strong> ${contact.phone}<br>
+        <button class="btn" onclick="editContact(${index})">Edit</button>
+        <button class="btn" onclick="deleteContact(${index})">Delete</button>
+      `;
+      contactsList.appendChild(item);
+    });
 
-    function displayContacts() {
-        var contactsList = document.getElementById("contactsList");
-        contactsList.innerHTML = "";
-        contacts.forEach(function(contact, index) {
-            var contactItem = document.createElement("div");
-            contactItem.classList.add("contact-item");
-            contactItem.innerHTML = "<strong>Name:</strong> " + contact.name + "<br><strong>Phone:</strong> " + contact.phone + 
-            "<br><button class='btn' onclick='editContact(" + index + ")'>Edit</button> <button class='btn' onclick='deleteContact(" + index + ")'>Delete</button>";
-            contactsList.appendChild(contactItem);
-        });
-    }
+    const deleteContainer = document.getElementById("deleteAllContainer");
+    deleteContainer.style.display = contacts.length > 1 ? "block" : "none";
+  }
 
-    function clearForm() {
-        document.getElementById("name").value = "";
-        document.getElementById("phone").value = "";
-    }
+  function clearForm() {
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+  }
 
-    function deleteContact(index) {
-        contacts.splice(index, 1);
-        localStorage.setItem('contacts', JSON.stringify(contacts));
-        displayContacts();
-    }
+  function deleteContact(index) {
+    contacts.splice(index, 1);
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+    displayContacts();
+  }
 
-    function deleteAllContacts() {
-        contacts = [];
-        localStorage.removeItem('contacts');
-        displayContacts();
+  function deleteAllContacts() {
+    if (confirm("Are you sure you want to delete all contacts?")) {
+      contacts = [];
+      localStorage.removeItem('contacts');
+      displayContacts();
     }
+  }
 
-    function editContact(index) {
-        var editedName = prompt("Enter new name:", contacts[index].name);
-        var editedPhone = prompt("Enter new phone number:", contacts[index].phone);
-        if (editedName !== null && editedPhone !== null) {
-            contacts[index].name = editedName;
-            contacts[index].phone = editedPhone;
-            localStorage.setItem('contacts', JSON.stringify(contacts));
-            displayContacts();
-        }
-    }
+  function editContact(index) {
+    const current = contacts[index];
+    const newName = prompt("Edit name:", current.name);
+    const newPhone = prompt("Edit phone number:", current.phone);
 
-    function searchContacts() {
-        var input, filter, contactsList, contactItem, name, i, txtValue;
-        input = document.getElementById('search');
-        filter = input.value.toUpperCase();
-        contactsList = document.getElementById("contactsList");
-        contactItem = contactsList.getElementsByClassName('contact-item');
-        for (i = 0; i < contactItem.length; i++) {
-            name = contactItem[i].getElementsByTagName("strong")[0];
-            txtValue = name.textContent || name.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                contactItem[i].style.display = "";
-            } else {
-                contactItem[i].style.display = "none";
-            }
-        }
+    if (newName && /^\d{11}$/.test(newPhone)) {
+      contacts[index] = { name: newName.trim(), phone: newPhone.trim() };
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+      displayContacts();
+    } else {
+      alert("Invalid input. Phone must be 11 digits.");
     }
+  }
+
+  function searchContacts() {
+    const input = document.getElementById('search').value.toUpperCase();
+    const contactItems = document.querySelectorAll('.contact-item');
+
+    contactItems.forEach(item => {
+      const text = item.textContent.toUpperCase();
+      item.style.display = text.includes(input) ? "" : "none";
+    });
+  }
 </script>
 
 </body>
